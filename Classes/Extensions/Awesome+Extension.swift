@@ -5,7 +5,7 @@
 //  Originally created by Ondrej Rafaj on 13/10/2017.
 //  Copyright ©2022 manGoweb UK. All rights reserved.
 //
-//  This file has been auto-generated on 16/10/2022 04:47).
+//  This file has been auto-generated on 16/10/2022 06:37).
 
 import Foundation
 
@@ -35,51 +35,51 @@ public extension Awesome {
         }
 
         public enum Classic: String, Identifiable, Equatable, AwesomeFont, CaseIterable {
+            case regular
             case solid
             case brand
-            case regular
 
             public var file: String {
                 switch self {
+                    case .regular:
+                        return "fa-regular-400"
                     case .solid:
                         return "fa-solid-900"
                     case .brand:
                         return "fa-brands-400"
-                    case .regular:
-                        return "fa-regular-400"
                 }
             }
 
             public var description: String {
                 switch self {
+                    case .regular:
+                        return "Font Awesome 6 Free"
                     case .solid:
                         return "Font Awesome 6 Free"
                     case .brand:
                         return "Font Awesome 6 Brands"
-                    case .regular:
-                        return "Font Awesome 6 Free"
                 }
             }
 
             public var memberName: String {
                 switch self {
+                    case .regular:
+                        return "FontAwesome6Free-Regular"
                     case .solid:
                         return "FontAwesome6Free-Solid"
                     case .brand:
                         return "FontAwesome6Brands-Regular"
-                    case .regular:
-                        return "FontAwesome6Free-Regular"
                 }
             }
 
             public var alternativeFileName: String {
                 switch self {
+                    case .regular:
+                        return "Font Awesome 6 Free-Regular-400"
                     case .solid:
                         return "Font Awesome 6 Free-Solid-900"
                     case .brand:
-                        return "Font Awesome 6 Brands-Brands-400"
-                    case .regular:
-                        return "Font Awesome 6 Free-Regular-400"
+                        return "Font Awesome 6 Brands-Regular-400"
                 }
             }
 

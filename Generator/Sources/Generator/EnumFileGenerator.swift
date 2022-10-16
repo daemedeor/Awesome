@@ -75,8 +75,23 @@ struct EnumFileGenerator {
                 fileBody += generator.indent()
                 
                 fileBody += "\n"
+                fileBody += generator.buildHeader(for: .var,
+                                                  with: "unicodeString",
+                                                  modifiers: [.public, .varReturn("String")],
+                                                  indentBy: .increase())
+
                 fileBody += generator.indent(for: .increase())
                 
+                fileBody += "switch self {\n"
+
+                for icon in icons.value {
+                    fileBody += generateIconCase(icon: icon,
+                                                 includeDot: true,
+                                                 value: .value("\"\\u{\(icon.unicode)}\"")) + "\n"
+                }
+                
+                fileBody += generator.indent() + "}\n"
+                fileBody += generator.indent(for: .decrease()) + "}\n\n"
                 fileBody += "public static func withKey(_ label: String) -> "
                 fileBody += icons.key.alias.firstUppercased() + "? {\n"
 
@@ -135,7 +150,7 @@ struct EnumFileGenerator {
 
                 fileBody += generator.buildHeader(for: .enum,
                                                 with: style.key.enumName(onlyStyle: true).firstUppercased(),
-                                                  modifiers: [.unicodable, .amazing, .public],
+                                                  modifiers: [.amazing, .public],
                                                 indentBy: .increase())
                 
                 for icon in style.value {

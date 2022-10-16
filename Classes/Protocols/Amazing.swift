@@ -34,8 +34,7 @@ public protocol Amazing: Identifiable, Hashable, CaseIterable {
     
     static var allCases: [Self] { get }
     
-}
+    static func withKey(_ label: String) -> Self?
 
-public protocol unicodable {
     var unicodeString : String { get }
 }

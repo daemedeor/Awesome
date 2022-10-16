@@ -21,8 +21,10 @@ enum Style: String, CaseIterable {
             return "400"
         case .solid, .duotone:
             return "900"
-        case .light, .thin:
+        case .light:
             return "300"
+        case .thin:
+            return "100"
         }
     }
     

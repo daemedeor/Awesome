@@ -7,14 +7,14 @@
 
 import Foundation
 
-public protocol Amazing: RawRepresentable, Hashable, CaseIterable where RawValue == String {
+public protocol Amazing: Identifiable, Hashable, CaseIterable {
     
     /// Returns an unique identifier string that contains the icon name
     var key: String { get }
     
     /// Returns an unique identifier string that contains the font name, font style and icon name
     var detailedKey: String { get }
-    
+
     /// Returns a human readable string that describes the icon
     var description: String { get }
     
@@ -29,5 +29,13 @@ public protocol Amazing: RawRepresentable, Hashable, CaseIterable where RawValue
 
     /// An array with all human readable descriptions of all icons of the font style
     static var allDescriptions: [String] { get }
-        
+    
+    var id: String { get }
+    
+    static var allCases: [Self] { get }
+    
+}
+
+public protocol unicodable {
+    var unicodeString : String { get }
 }

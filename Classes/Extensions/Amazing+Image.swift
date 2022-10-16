@@ -20,7 +20,6 @@ public extension Amazing.Image {
         let fontAspectRatio: CGFloat = 1.28571429
         let fontSize = min(size.width / fontAspectRatio, size.height)
         let attributedString = NSAttributedString(icon: icon, fontSize: fontSize, color: color, backgroundColor: backgroundColor)
-        
         #if os(iOS) || os(watchOS) || os(tvOS)
             UIGraphicsBeginImageContextWithOptions(size, false , 0.0)
             

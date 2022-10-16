@@ -44,6 +44,40 @@ public extension Amazing {
         return NSAttributedString(icon: self, fontSize: fontSize, color: color, backgroundColor: backgroundColor)
     }
     
+    fileprivate func unicodeRepresentation(for scalers: String.UnicodeScalarView) -> String {
+        let value = scalers[scalers.startIndex].value
+
+        return String(format: "%02x", value)
+    }
+}
+
+public extension Amazing where Self: unicodable {
+    init?(unicode: String) {
+        guard
+            let bytes = (unicode.count > 2 ? unicode : "00\(unicode)").bytes(),
+            let value = String(data: Data(bytes), encoding: .utf16)
+        else {
+            return nil
+        }
+        
+        if let foundItem = Self.allCases.first(where : { $0.unicodeString == value }) {
+            self = foundItem
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate var scaler: String.UnicodeScalarView {
+        return self.unicodeString.unicodeScalars
+    }
+
+    var unicode: String {
+        let scalars = self.unicodeString.unicodeScalars
+        return unicodeRepresentation(for: scalars)
+    }
+}
+
+public extension Amazing where Self: RawRepresentable, RawValue == String {
     init?(unicode: String) {
         guard
             let bytes = (unicode.count > 2 ? unicode : "00\(unicode)").bytes(),
@@ -53,12 +87,11 @@ public extension Amazing {
         }
         self.init(rawValue: value)
     }
+    
 
-    var unicode: String {
+    var unicodableRepresentation: String {
         let scalars = rawValue.unicodeScalars
-        let value = scalars[scalars.startIndex].value
-
-        return String(format: "%02x", value)
+        return unicodeRepresentation(for: scalars)
     }
 }
 
@@ -75,7 +108,11 @@ public extension Amazing {
 #endif
 
 extension Amazing {
-    
+   
+    public var id: String {
+        return self.key + self.detailedKey
+    }
+
     /// Returns an unique identifier string that contains the font name, font style and icon name
     public var detailedKey: String {
         return String(reflecting: self)
@@ -109,6 +146,10 @@ extension Amazing {
     /// An array with all human readable descriptions of all icons of the font style
     public static var allDescriptions: [String] {
         return allCases.map { $0.description }
+    }
+    
+    public var cases: [some Amazing] {
+        Self.allCases
     }
     
     // MARK: - Removed

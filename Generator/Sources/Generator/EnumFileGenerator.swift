@@ -3,17 +3,17 @@ import Foundation
 
 struct EnumFileGenerator {
 
-    let options: FileGeneration
+    let generator: FileGeneration
     var oldStyle : Bool
 
     func body(from families: [Family: [UpdatedIcon]]) -> String {
-        print("\nGenerating \(options.type.association).swift\n")
+        print("\nGenerating \(generator.type.association).swift\n")
 
-        var fileBody = options.header
+        var fileBody = generator.header
 
-        fileBody += options.buildHeader(for: .struct, with: options.type.association, modifiers: [.public]) 
+        fileBody += generator.buildHeader(for: .struct, with: generator.type.association, modifiers: [.public]) 
         fileBody += oldStyle ? oldFormat(from: families) : newFormat(from: families)
-        fileBody += "\n" + options.indent(for: .decrease()) + "}\n"
+        fileBody += "\n" + generator.indent(for: .decrease()) + "}\n"
         
         return fileBody
     }
@@ -39,12 +39,12 @@ struct EnumFileGenerator {
                 }
             }
             
-            options.adjustIndent(for: .increase())
+            generator.adjustIndent(for: .increase())
 
             for icons in familyStyles {
                 guard family.enumName(onlyStyle: true).contains(icons.key.alias) else { continue }
 
-                fileBody += options.buildHeader(for: .enum,
+                fileBody += generator.buildHeader(for: .enum,
                                                 with: "\(icons.key.alias)".firstUppercased(),
                                                 modifiers: [.string, .amazing, .public],
                                                 indentBy: .same)
@@ -52,23 +52,44 @@ struct EnumFileGenerator {
                 for icon in icons.value {
                     fileBody += generateIconCase(icon: icon) + "\n"
                 }
-
+                
                 fileBody += "\n"
-                fileBody += options.indent(for: .increase())
+
+                fileBody += generator.buildHeader(for: .var,
+                                                  with: "unicode",
+                                                  modifiers: [.public, .varReturn("String")],
+                                                  indentBy: .increase())
+
+                fileBody += generator.indent(for: .increase())
+                
+                fileBody += "switch self {\n"
+
+                for icon in icons.value {
+                    fileBody += generateIconCase(icon: icon,
+                                                 includeDot: true,
+                                                 value: .value("\"\\u{\(icon.unicode)}\"")) + "\n"
+                }
+                
+                fileBody += generator.indent() + "}\n"
+                fileBody += generator.indent(for: .decrease()) + "}\n\n"
+                fileBody += generator.indent()
+                
+                fileBody += "\n"
+                fileBody += generator.indent(for: .increase())
                 
                 fileBody += "public static func withKey(_ label: String) -> "
                 fileBody += icons.key.alias.firstUppercased() + "? {\n"
 
-                fileBody += options.indent(for: .increase())
+                fileBody += generator.indent(for: .increase())
 
                 fileBody += "return self.allCases.first { label == \"\\($0)\" }\n"
 
-                fileBody += options.indent(for: .decrease()) + "}"
-                fileBody += generateFontType(name: "\(options.type.association)",
+                fileBody += generator.indent(for: .decrease()) + "}"
+                fileBody += generateFontType(name: "\(generator.type.association)",
                                              postFix: "\(family.rawDescription.firstUppercased()).\(icons.key.alias)")
 
-                fileBody += options.indent() + "}\n"
-                options.adjustIndent(for: .decrease())
+                fileBody += generator.indent() + "}\n"
+                generator.adjustIndent(for: .decrease())
             }
 
             print("Style \"\(family.enumName(onlyStyle: false))\" has \(list.count) icons.")
@@ -98,22 +119,23 @@ struct EnumFileGenerator {
         for family in normalizedData {
             var totalFamilyIconCount = 0
 
-            fileBody += options.buildHeader(for: .enum,
+            fileBody += generator.buildHeader(for: .enum,
                                             with: family.key.firstUppercased(),
+                                            modifiers: [.public],
                                             indentBy: .increase())
             
             for style in family.value {
-                fileBody += options.generateCase("\(style.key.enumName(onlyStyle: true).lowercased())(\(style.key.enumName(onlyStyle: true).firstUppercased()))") + "\n"
+                fileBody += generator.generateCase("\(style.key.enumName(onlyStyle: true).lowercased())(\(style.key.enumName(onlyStyle: true).firstUppercased()))") + "\n"
             }
 
             fileBody += "\n"
-            
+
             for style in family.value {
                 var iconCount = 0
 
-                fileBody += options.buildHeader(for: .enum,
+                fileBody += generator.buildHeader(for: .enum,
                                                 with: style.key.enumName(onlyStyle: true).firstUppercased(),
-                                                modifiers: [.string, .amazing],
+                                                  modifiers: [.unicodable, .amazing, .public],
                                                 indentBy: .increase())
                 
                 for icon in style.value {
@@ -122,40 +144,62 @@ struct EnumFileGenerator {
                 }
                 
                 fileBody += "\n"
-                fileBody += options.indent(for: .increase())
                 
-                fileBody += "public static func withKey(_ label: String) -> "
+                fileBody += generator.buildHeader(for: .var,
+                                                  with: "unicodeString",
+                                                  modifiers: [.public, .varReturn("String")],
+                                                  indentBy: .increase())
+
+                fileBody += generator.indent(for: .increase())
+                
+                fileBody += "switch self {\n"
+
+                for icon in style.value {
+                    iconCount += 1
+                    fileBody += generateIconCase(icon: icon,
+                                                 includeDot: true,
+                                                 value: .value("\"\\u{\(icon.unicode)}\"")) + "\n"
+                }
+                
+                fileBody += generator.indent() + "}\n"
+                fileBody += generator.indent(for: .decrease()) + "}\n\n"
+
+                fileBody += generator.indent() + "public static func withKey(_ label: String) -> "
                 fileBody += style.key.enumName(onlyStyle: true).firstUppercased() + "? {\n"
 
-                fileBody += options.indent(for: .increase())
+                fileBody += generator.indent(for: .increase())
 
-                fileBody += "return self.allCases.first { label == \"\\($0)\" }\n"
+                fileBody += "return self.allCases.first { label == \"\\($0.unicodeString)\" }\n"
                 
-                fileBody += options.indent(for: .decrease()) + "}\n"
+                fileBody += generator.indent(for: .decrease()) + "}\n"
 
-                fileBody += generateFontType(name: "\(options.type.association)",
+                fileBody += generateFontType(name: "\(generator.type.association)",
                                              postFix: "\(family.key.firstUppercased()).\(style.key.enumName(onlyStyle: true).lowercased())")
-                fileBody += options.indent() + "}\n"
-              
+                fileBody += generator.indent() + "}\n\n"
+                
+                generator.adjustIndent(for: .decrease())
+                
                 print("Style \"\(style.key.enumName().fullCasing())\" has \(iconCount) icons.")
-                options.adjustIndent(for: .decrease())
+
                 totalFamilyIconCount += iconCount
             }
+
+            generator.adjustIndent(for: .increase())
             
-            repeat {
-                fileBody += options.indent(for: .decrease()) + "}\n"
-            } while options.indentationLeveler.currentIndentLevel > 0
-  
+            fileBody += generator.indent(for: .decrease()) + "}\n"
+
+            generator.adjustIndent(for: .decrease())
+            
             print("\(family.key.firstUppercased()) has a total of \(totalFamilyIconCount) icons. \n")
         }
         
         return fileBody
     }
     
-    func generateIconCase(icon: any BaseIcon) -> String {
+    func generateIconCase(icon: any BaseIcon, includeDot: Bool = false, value: FileGeneration.CaseValue? = nil) -> String {
         let normalizedName = generateName(name: icon.name)
 
-        return options.generateCase(normalizedName.isKeyword ? "`\(normalizedName)`" : normalizedName, value: "\\u{\(icon.unicode)}")
+        return generator.generateCase(normalizedName.isKeyword ? "`\(normalizedName)`" : normalizedName, value: value, includeDot: includeDot)
     }
 
     func generateName(name: String) -> String {
@@ -170,19 +214,19 @@ struct EnumFileGenerator {
     }
 
     func generateFontType(name: String, postFix: String) -> String {
-        var content = "\n" + options.buildHeader(for: .var,
+        var content = "\n" + generator.buildHeader(for: .var,
                                           with: "fontType",
                                           modifiers: [.public, .awesomeFont])
 
-        content += options.indent(for: .increase())
+        content += generator.indent(for: .increase())
 
         content += "return \(name).Font.\(postFix)\n"
 
-        content += options.indent(for: .decrease())
+        content += generator.indent(for: .decrease())
 
         content += "}\n"
         
-        options.adjustIndent(for: .decrease())
+        generator.adjustIndent(for: .decrease())
 
         return content
     }

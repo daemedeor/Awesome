@@ -92,23 +92,38 @@ enum Family: Codable, Hashable, CaseIterable {
         case .sharp(let style),
              .duotone(let style),
              .classic(let style):
-            initialString += style.rawValue.firstUppercased()
+            initialString += style.fontStyleName.firstUppercased()
         }
         
         return initialString
     }
     
-    var file: String {
-        var tempName = "fa-"
+    func file(isFree: Bool = false) -> String {
+        var fileName = "fa-"
         
         switch self {
         case .sharp(let style),
              .duotone(let style),
              .classic(let style):
-            tempName += style.rawValue.lowercased() + "-" + style.weight
+            fileName += "\(isFree ? "" : self.rawDescription + "-")"
+            fileName += style.rawValue.lowercased()
+            fileName += "-" + style.weight
         }
         
-        return tempName
+        return fileName
+    }
+    
+    func alternativeFileName(isFree: Bool = false) -> String {
+        var fileName = fontFileDescription(isFree: isFree) + "-"
+
+        switch self {
+        case .sharp(let style),
+             .duotone(let style),
+             .classic(let style):
+            fileName += style.rawValue.firstUppercased() + "-" + style.weight
+        }
+        
+        return fileName
     }
 
     var stringDescription: String {

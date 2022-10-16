@@ -33,11 +33,7 @@ class Fonts {
         fontBundle = bundle ?? Bundle(for: Self.self)
         #endif
 
-        let identifier = fontBundle.bundleIdentifier
-        let isCocoapods = identifier?.hasPrefix("org.cocoapods") == true
-
-        let fontURL = fontBundle.url(forResource: type.file, withExtension: "ttf", subdirectory: isCocoapods ? "Awesome.bundle" : nil)
-        guard let url = fontURL else {
+        guard let url = findFile(type, in: fontBundle) else {
             return
         }
 
@@ -53,6 +49,46 @@ class Fonts {
             NSException(name: NSExceptionName.internalInconsistencyException, reason: errorDescription as String, userInfo: [NSUnderlyingErrorKey: nsError]).raise()
         }
         
+    }
+
+    enum FileType: CaseIterable {
+        case file
+        case alternativeFile
+    }
+    
+    enum FontFileExtension: String, CaseIterable {
+        case otf
+        case ttf
+    }
+
+    private static func findFile(_ type: AwesomeFont, in fontBundle: Bundle) -> URL? {
+        let identifier = fontBundle.bundleIdentifier
+        let isCocoapods = identifier?.hasPrefix("org.cocoapods") == true
+
+        let subdirectory = isCocoapods ? "Awesome.bundle" : nil
+        
+        var foundURL: URL?
+        
+        for fontFileType in FontFileExtension.allCases {
+            for fileType in FileType.allCases {
+                switch fileType {
+                case .file:
+                    foundURL = fontBundle.url(forResource: type.file, withExtension: fontFileType.rawValue, subdirectory: subdirectory)
+                case .alternativeFile:
+                    foundURL = fontBundle.url(forResource: type.alternativeFileName, withExtension: fontFileType.rawValue, subdirectory: subdirectory)
+                }
+                
+                if let foundURL {
+                    return foundURL
+                }
+            }
+            
+            if let foundURL {
+                return foundURL
+            }
+        }
+        
+        return foundURL
     }
     
 }

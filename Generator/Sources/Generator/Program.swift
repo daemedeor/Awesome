@@ -75,7 +75,7 @@ struct EnumGenerator: ParsableCommand {
                 continue
             }
 
-            let generatedFile = EnumFileGenerator(options: .init(type: membership),
+            let generatedFile = EnumFileGenerator(generator: .init(type: membership),
                                                   oldStyle: parser.olderStyle)
                 .body(from: icons)
 

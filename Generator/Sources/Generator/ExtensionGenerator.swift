@@ -8,14 +8,16 @@
 import Foundation
 
 struct ExtensionGenerator {
-    enum Variable {
+    enum Variable : CaseIterable {
         case file
         case description
         case membership
+        case alternativeFileName
         
         var description: String {
             switch self {
             case .file: return "file"
+            case .alternativeFileName: return "alternativeFileName"
             case .description: return "description"
             case .membership: return "memberName"
             }
@@ -25,6 +27,8 @@ struct ExtensionGenerator {
     let generator: FileGeneration
 
     func body(for membership: Membership, from families: Set<Family>) -> String {
+        let familyStyles = Set(Family.allCases.compactMap { $0.rawDescription })
+
         var content = generator.header + "\n"
         
         content += generator.buildHeader(for: .extension,
@@ -33,12 +37,10 @@ struct ExtensionGenerator {
           
         content += generator.buildHeader(for: .enum,
                                          with: "Font",
-                                         modifiers: [.caseiterable, .equatable],
+                                         modifiers: [.caseiterable, .identifiable, .equatable],
                                          indentBy: .increase())
  
         generator.adjustIndent(for: .increase())
- 
-        let familyStyles = Set(Family.allCases.compactMap { $0.rawDescription })
 
         for familyStyle in familyStyles where families.contains(where: { familyStyle == $0.rawDescription }) {
             content += generator.indent()
@@ -48,6 +50,28 @@ struct ExtensionGenerator {
         }
         
         content += "\n"
+
+        content += generator.buildHeader(for: .var,
+                                         with: "id",
+                                         modifiers: [.public, .varReturn("String")])
+        
+        content += generator.indent(for: .increase())
+        content += "switch self {\n"
+        generator.adjustIndent(for: .increase())
+        
+        for familyStyle in familyStyles where families.contains(where: { familyStyle == $0.rawDescription }) {
+            content += generator.indent()
+            content += "case let ."
+            content += familyStyle.lowercased() + "(style):\n"
+            content += generator.indent(for: .increase())
+            content += "return \"" + familyStyle.lowercased() + "\" + style.memberName" + "\n"
+            generator.adjustIndent(for: .decrease())
+        }
+
+        content += generator.indent(for: .decrease())
+        content += "}\n"
+        content += generator.indent(for: .decrease())
+        content += "}\n\n"
 
         content += generator.buildHeader(for: .var,
                                          with: "allCases",
@@ -71,16 +95,35 @@ struct ExtensionGenerator {
         }
 
         content += "\n"
-        generator.adjustIndent(for: .decrease())
 
+        content += generator.buildHeader(for: .var,
+                                         with: "cases",
+                                         modifiers: [.public, .static, .varReturn("[AwesomeFont]")])
+        
+        content += generator.indent(for: .increase())
+        
+        content += "var fonts: [AwesomeFont] = []\n"
+        
         for familyStyle in familyStyles where families.contains(where: { familyStyle == $0.rawDescription }) {
             content += generator.indent()
+            content += "fonts += " + familyStyle.firstUppercased() + ".allCases.compactMap { style in \n"
+            content += generator.indent(for: .increase())
+            content += "return style\n"
+            content += generator.indent(for: .decrease())
+            content += "}\n"
+        }
+        
+        content += generator.indent() + "return fonts\n"
+        
+        content += generator.indent(for: .decrease())
+        content += "}\n\n"
 
+        for familyStyle in familyStyles where families.contains(where: { familyStyle == $0.rawDescription }) {
             content += generator.buildHeader(for: .enum,
                                              with: familyStyle.firstUppercased(),
-                                             modifiers: [.public, .string, .equatable, .awesomeFont, .caseiterable])
-
-            generator.adjustIndent(for: .increase(2))
+                                             modifiers: [.public, .string, .identifiable, .equatable, .awesomeFont, .caseiterable])
+            
+            generator.adjustIndent(for: .increase())
 
             for family in families where family.rawDescription == familyStyle {
                 content += generator.indent()
@@ -92,18 +135,27 @@ struct ExtensionGenerator {
             content += "\n"
 
             content += generator.indent(for: .decrease())
-            generator.adjustIndent(for: .decrease())
+
+            for variable in Variable.allCases {
+                generator.adjustIndent(for: .decrease())
+                content += buildVarProperties(for: variable, currentStyle: familyStyle, in: families)
+                content += "\n" + generator.indent(for: .decrease())
+            }
+
+            content += generator.buildHeader(for: .var,
+                                             with: "id",
+                                             modifiers: [.public, .varReturn("String")],
+                                             indentBy: .decrease())
             
+            content += generator.indent(for: .increase(3))
             
-            content += buildVarProperties(for: .file, currentStyle: familyStyle, in: families)
-            content += "\n" + generator.indent(for: .decrease())
-            generator.adjustIndent(for: .decrease())
-            content += buildVarProperties(for: .description, currentStyle: familyStyle, in: families)
-            content += "\n" + generator.indent(for: .decrease())
-            generator.adjustIndent(for: .decrease())
-            content += buildVarProperties(for: .membership, currentStyle: familyStyle, in: families)
-            content += "\n"
-            
+            content += "return self.memberName\n"
+
+            content += generator.indent(for: .decrease())
+            content += "}\n"
+            content += generator.indent(for: .decrease())
+            content += "}\n\n"
+
             content += generator.indent()
             content += "public static func loadFonts(from bundle: Bundle, only: [\(familyStyle.firstUppercased())] = []) {\n"
             content += generator.indent(for: .increase())
@@ -126,11 +178,11 @@ struct ExtensionGenerator {
                 content += generator.indent(for: .decrease()) + "}\n"
             } while generator.indentationLeveler.currentIndentLevel > 2
             
-            generator.adjustIndent(for: .decrease())
             content += "\n"
         }
 
-        content += generator.indent() + "}\n"
+        content += generator.indent(for: .decrease())
+        content += "}\n"
 
         content += "\n" + generator.indent() + "static func loadFonts(from bundle: Bundle, only: [Font] = []) {\n"
 
@@ -197,17 +249,19 @@ struct ExtensionGenerator {
         
         for family in families where family.rawDescription == currentStyle {
             content += generator.generateCase("\(family.enumName(onlyStyle: true))", includeDot: true, indentBy: .same) + ":\n"
-
+            
+            content += generator.indent(for: .increase(2))
+            
             switch variableName {
             case .file:
-                content += generator.indent(for: .increase(2))
-                content += "return \"" + family.file + "\"\n"
+                content += "return \"" + family.file(isFree: generator.type.isFree) + "\"\n"
             case .description:
-                content += generator.indent(for: .increase(2))
                 content += "return \"" + family.fontFileDescription(isFree: generator.type.isFree) + "\"\n"
             case .membership:
-                content += generator.indent(for: .increase(2))
                 content += "return \"" + family.memberName(isFree: generator.type.isFree) + "\"\n"
+            case .alternativeFileName:
+                content += "return \"" + family.alternativeFileName(isFree: generator.type.isFree) + "\"\n"
+
             }
             
             generator.adjustIndent(for: .decrease())

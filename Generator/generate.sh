@@ -38,21 +38,29 @@ cp "$output/AwesomePro.swift" "../Classes/Enums"
 cp "$output/Awesome+Extension.swift" "../Classes/Extensions"
 cp "$output/AwesomePro+Extension.swift" "../Classes/Extensions"
 
+echo "Generating assets"
+rm -rf "../Assets"
+mkdir "../Assets"
+
 if $moveAssets; then
     url="$(get_latest_release)"
     echo "\nRequesting data from '$url'"
     curl -L "$url" --output fontawesome-free.zip
     unzip -joq ./fontawesome-free.zip -d FontAwesome
 
-    if [[ ! -d "../Assets" ]]; then
-      mkdir "../Assets"
+    if [ "$(find "./FontAwesome" -maxdepth 1 -type f | grep -i '.*\.ttf$')" ]; then
+        echo "Loading Free Fonts"
+        find "./FontAwesome" -type f -name '*.ttf' -exec cp {} "../Assets"/ \;
     fi
 
-    if [[ -n "$location" && -f "$location/otf/*.otf" ]]; then
-      cp "$location/otf/*.otf" "../Assets"
+    if [[ -n "$location" ]]; then
+        echo "Loading Pro Fonts"
+        if [ "$(find "$location" -type f | grep -i '.*\.ttf$')" ]; then
+            find "$location" -type f -name '*.ttf' -exec cp {} "../Assets"/ \;
+        fi
+        if [ "$(find "$location" -type f | grep -i '.*\.otf$')" ]; then
+            find "$location" -type f -name '*.otf' -exec cp {} "../Assets"/ \;
+        fi
     fi
 
-    if [[ -f "./FontAwesome/*.otf" ]]; then
-        cp "./FontAwesome/*.otf" "../Assets"
-    fi
 fi

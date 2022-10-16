@@ -17,16 +17,17 @@ public extension NSAttributedString {
     
     convenience init<AmazingType: Amazing>(icon: AmazingType, fontSize: CGFloat, color: Amazing.Color = .black, backgroundColor: Amazing.Color = .clear) {
         Fonts.load(type: icon.fontType)
-        
+       
         guard let font = Amazing.Font(name: icon.fontType.memberName, size: fontSize) else {
             fatalError("Font \(icon.fontType.memberName) not loaded properly. Did you forget to call AwesomePro.loadFonts(from:)?")
         }
-        
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
-        let attributes = [NSAttributedString.Key.font: font, .foregroundColor: color, .backgroundColor: backgroundColor, .paragraphStyle: paragraph]
-        
-        self.init(string: icon.rawValue, attributes: attributes)
+        let attributes = [NSAttributedString.Key.font: font,
+                          .foregroundColor: color,
+                          .backgroundColor: backgroundColor,
+                          .paragraphStyle: paragraph]
+        self.init(string: icon.description, attributes: attributes)
     }
     
 }

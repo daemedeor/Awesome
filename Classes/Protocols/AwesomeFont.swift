@@ -14,5 +14,7 @@ public protocol AwesomeFont: CustomStringConvertible {
     
     /// A unique string that describes the font, version and style
     var memberName: String { get }
-    
+   
+    /// The file name that contains the font assuming it got loaded in more recent times
+    var alternativeFileName: String { get }
 }

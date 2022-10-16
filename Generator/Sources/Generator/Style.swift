@@ -24,7 +24,14 @@ enum Style: String, CaseIterable {
         case .light, .thin:
             return "300"
         }
-    }    
+    }
+    
+    var fontStyleName: String {
+        switch self {
+        case .brands: return "regular"
+        default: return self.rawValue
+        }
+    }
 }
 
 extension Style {

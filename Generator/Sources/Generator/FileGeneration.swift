@@ -20,16 +20,23 @@ struct FileGeneration {
         case `typealias`
     }
 
+    enum CaseValue {
+        case equal(String)
+        case value(String)
+    }
+
     /// Modifiers to the func including return type
-    enum Extensions: Equatable {
+    enum Extensions: Equatable, Identifiable {
         case `string`
         case `caseiterable`
         case anyAwesomefont
         case awesomeFont
+        case unicodable
         case `static`
         case amazing
         case `public`
         case `private`
+        case `identifiable`
         case `equatable`
         case funcReturn(String)
         case varReturn(String)
@@ -40,14 +47,20 @@ struct FileGeneration {
             case .caseiterable: return "CaseIterable"
             case .anyAwesomefont: return "any AwesomeFont"
             case .awesomeFont: return "AwesomeFont"
+            case .identifiable: return "Identifiable"
             case .static: return "static"
             case .amazing: return "Amazing"
             case .private: return "private"
             case .public: return "public"
             case .equatable: return "Equatable"
+            case .unicodable: return "unicodable"
             case .funcReturn(let returnValue): return "\(returnValue)"
             case .varReturn(let returnValue): return "\(returnValue)"
             }
+        }
+        
+        var id: String {
+            description
         }
         
         static var toSkip: [Extensions] {
@@ -165,11 +178,17 @@ struct FileGeneration {
         return enumName
     }
     
-    func generateCase(_ `case`: String, value: String? = nil, includeDot: Bool = false, indentBy: IndentSpacer = .increase()) -> String {
+    func generateCase(_ `case`: String, value: CaseValue? = nil, includeDot: Bool = false, indentBy: IndentSpacer = .increase()) -> String {
 
         var caseString = indent(for: indentBy)
 
-        caseString += "case \(includeDot ? "." : "")\(`case`)\(value != nil ? " = \"\(value ?? "")\"" : "")"
+        caseString += "case \(includeDot ? "." : "")\(`case`)"
+        
+        if case let .value(potentialValue) = value {
+            caseString += ": return \(potentialValue)"
+        } else if case let .equal(potentionalValue) = value {
+            caseString += " = \(potentionalValue)"
+        }
         
         adjustIndent(for: .decrease())
 

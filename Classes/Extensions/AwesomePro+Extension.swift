@@ -5,7 +5,7 @@
 //  Originally created by Ondrej Rafaj on 13/10/2017.
 //  Copyright ©2022 manGoweb UK. All rights reserved.
 //
-//  This file has been auto-generated on 16/10/2022 04:47).
+//  This file has been auto-generated on 16/10/2022 17:28).
 
 import Foundation
 
@@ -50,21 +50,21 @@ public extension AwesomePro {
 
         public enum Classic: String, Identifiable, Equatable, AwesomeFont, CaseIterable {
             case thin
+            case light
             case solid
             case brand
-            case light
             case regular
 
             public var file: String {
                 switch self {
                     case .thin:
-                        return "fa-classic-thin-300"
+                        return "fa-classic-thin-100"
+                    case .light:
+                        return "fa-classic-light-300"
                     case .solid:
                         return "fa-classic-solid-900"
                     case .brand:
                         return "fa-classic-brands-400"
-                    case .light:
-                        return "fa-classic-light-300"
                     case .regular:
                         return "fa-classic-regular-400"
                 }
@@ -74,12 +74,12 @@ public extension AwesomePro {
                 switch self {
                     case .thin:
                         return "Font Awesome 6 Pro"
+                    case .light:
+                        return "Font Awesome 6 Pro"
                     case .solid:
                         return "Font Awesome 6 Pro"
                     case .brand:
                         return "Font Awesome 6 Brands"
-                    case .light:
-                        return "Font Awesome 6 Pro"
                     case .regular:
                         return "Font Awesome 6 Pro"
                 }
@@ -89,12 +89,12 @@ public extension AwesomePro {
                 switch self {
                     case .thin:
                         return "FontAwesome6Pro-Thin"
+                    case .light:
+                        return "FontAwesome6Pro-Light"
                     case .solid:
                         return "FontAwesome6Pro-Solid"
                     case .brand:
                         return "FontAwesome6Brands-Regular"
-                    case .light:
-                        return "FontAwesome6Pro-Light"
                     case .regular:
                         return "FontAwesome6Pro-Regular"
                 }
@@ -103,13 +103,13 @@ public extension AwesomePro {
             public var alternativeFileName: String {
                 switch self {
                     case .thin:
-                        return "Font Awesome 6 Pro-Thin-300"
+                        return "Font Awesome 6 Pro-Thin-100"
+                    case .light:
+                        return "Font Awesome 6 Pro-Light-300"
                     case .solid:
                         return "Font Awesome 6 Pro-Solid-900"
                     case .brand:
-                        return "Font Awesome 6 Brands-Brands-400"
-                    case .light:
-                        return "Font Awesome 6 Pro-Light-300"
+                        return "Font Awesome 6 Brands-Regular-400"
                     case .regular:
                         return "Font Awesome 6 Pro-Regular-400"
                 }

@@ -120,7 +120,7 @@ enum Family: Codable, Hashable, CaseIterable {
         case .sharp(let style),
              .duotone(let style),
              .classic(let style):
-            fileName += style.rawValue.firstUppercased() + "-" + style.weight
+            fileName += style.fontStyleName.firstUppercased() + "-" + style.weight
         }
         
         return fileName

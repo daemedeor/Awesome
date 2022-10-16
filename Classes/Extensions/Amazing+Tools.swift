@@ -44,15 +44,14 @@ public extension Amazing {
         return NSAttributedString(icon: self, fontSize: fontSize, color: color, backgroundColor: backgroundColor)
     }
     
-    fileprivate func unicodeRepresentation(for scalers: String.UnicodeScalarView) -> String {
-        let value = scalers[scalers.startIndex].value
+    var unicode: String {
+        let scalars = self.unicodeString.unicodeScalars
+        let value = scalars[scalars.startIndex].value
 
         return String(format: "%02x", value)
     }
-}
-
-public extension Amazing where Self: unicodable {
-    init?(unicode: String) {
+    
+    init?(with unicode: String) {
         guard
             let bytes = (unicode.count > 2 ? unicode : "00\(unicode)").bytes(),
             let value = String(data: Data(bytes), encoding: .utf16)
@@ -66,21 +65,12 @@ public extension Amazing where Self: unicodable {
             return nil
         }
     }
-    
-    fileprivate var scaler: String.UnicodeScalarView {
-        return self.unicodeString.unicodeScalars
-    }
-
-    var unicode: String {
-        let scalars = self.unicodeString.unicodeScalars
-        return unicodeRepresentation(for: scalars)
-    }
 }
 
 public extension Amazing where Self: RawRepresentable, RawValue == String {
-    init?(unicode: String) {
+    init?(from unicodeString: String) {
         guard
-            let bytes = (unicode.count > 2 ? unicode : "00\(unicode)").bytes(),
+            let bytes = (unicodeString.count > 2 ? unicodeString : "00\(unicodeString)").bytes(),
             let value = String(data: Data(bytes), encoding: .utf16)
         else {
             return nil
@@ -91,7 +81,9 @@ public extension Amazing where Self: RawRepresentable, RawValue == String {
 
     var unicodableRepresentation: String {
         let scalars = rawValue.unicodeScalars
-        return unicodeRepresentation(for: scalars)
+        let value = scalars[scalars.startIndex].value
+
+        return String(format: "%02x", value)
     }
 }
 
@@ -150,6 +142,10 @@ extension Amazing {
     
     public var cases: [some Amazing] {
         Self.allCases
+    }
+    
+    public func key(for unicode: String) -> Self? {
+        return Self.withKey(unicode)
     }
     
     // MARK: - Removed

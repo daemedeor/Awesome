@@ -31,7 +31,6 @@ struct FileGeneration {
         case `caseiterable`
         case anyAwesomefont
         case awesomeFont
-        case unicodable
         case `static`
         case amazing
         case `public`
@@ -53,7 +52,6 @@ struct FileGeneration {
             case .private: return "private"
             case .public: return "public"
             case .equatable: return "Equatable"
-            case .unicodable: return "unicodable"
             case .funcReturn(let returnValue): return "\(returnValue)"
             case .varReturn(let returnValue): return "\(returnValue)"
             }

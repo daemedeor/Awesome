@@ -5,7 +5,7 @@
 //  Originally created by Ondrej Rafaj on 13/10/2017.
 //  Copyright ©2022 manGoweb UK. All rights reserved.
 //
-//  This file has been auto-generated on 16/10/2022 04:47).
+//  This file has been auto-generated on 16/10/2022 17:28).
 
 import Foundation
 
@@ -77,7 +77,7 @@ public extension Awesome {
                     case .solid:
                         return "Font Awesome 6 Free-Solid-900"
                     case .brand:
-                        return "Font Awesome 6 Brands-Brands-400"
+                        return "Font Awesome 6 Brands-Regular-400"
                     case .regular:
                         return "Font Awesome 6 Free-Regular-400"
                 }
